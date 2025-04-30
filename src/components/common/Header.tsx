@@ -17,7 +17,7 @@ const Header = () => {
   }, [pathname]);
 
   return (
-    <header className="bg-white shadow p-3.5 h-24 sticky top-0">
+    <header className="bg-white shadow p-3.5 h-24 sticky top-0 z-50" >
       <div className="container h-full flex justify-between items-center">
         <div className="logo">
           <NavLink to={"/home"}>

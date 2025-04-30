@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import actGetProducts from "./act/actGetProducts";
-import { isString, TLoading , TProduct} from "@types";
+import { isString, TLoading, TProduct } from "@types";
+import actAddProducts from "./act/actAddProducts";
+import actEditProduct from "./act/actEditProduct";
 
 type TProductsState = {
   loading: TLoading;
@@ -19,6 +21,7 @@ const productsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    // Get All Products
     builder.addCase(actGetProducts.pending, (state) => {
       state.loading = "idle";
       state.error = null;
@@ -29,6 +32,38 @@ const productsSlice = createSlice({
       state.error = null;
     });
     builder.addCase(actGetProducts.rejected, (state, action) => {
+      state.loading = "failed";
+      if (isString(action.payload)) {
+        state.error = action.payload;
+      }
+    });
+
+    // Add Products
+    builder.addCase(actAddProducts.pending, (state) => {
+      state.loading = "idle";
+      state.error = null;
+    });
+    builder.addCase(actAddProducts.fulfilled, (state) => {
+      state.loading = "succeeded";
+      state.error = null;
+    });
+    builder.addCase(actAddProducts.rejected, (state, action) => {
+      state.loading = "failed";
+      if (isString(action.payload)) {
+        state.error = action.payload;
+      }
+    });
+
+    // Edit Products
+    builder.addCase(actEditProduct.pending, (state) => {
+      state.loading = "idle";
+      state.error = null;
+    });
+    builder.addCase(actEditProduct.fulfilled, (state) => {
+      state.loading = "succeeded";
+      state.error = null;
+    });
+    builder.addCase(actEditProduct.rejected, (state, action) => {
       state.loading = "failed";
       if (isString(action.payload)) {
         state.error = action.payload;
