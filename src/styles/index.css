@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .container {
+    margin: 0 auto;
+    padding: 0 10px;
+  }
+
+  header .container ul li a {
+    padding: 10px;
+    border-radius: 4px;
+    transition: 0.3s;
+  }
+
+  header .container ul li a.active {
+    background: linear-gradient(to right, #74ebd5, #9face6);
+    color: #fff;
+  }
+
+  .gridList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+  }
+
+  .heightLayout {
+    min-height: calc(100vh - 96px);
+  }
+}
+
+body {
+  background: linear-gradient(to right, #74ebd5, #9face6);
+}
