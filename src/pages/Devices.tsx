@@ -13,6 +13,13 @@ import AddOrderForm from "@components/forms/AddOrderForm";
 import actRemoveClient from "@store/users/act/actRemoveClient";
 import actAddRevenues from "@store/revenues/act/actAddRevenues";
 
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 const Devices = () => {
   const [showModal, setShowModal] = useState(false);
   const [deviceId, setDeviceId] = useState(0);
@@ -34,8 +41,8 @@ const Devices = () => {
     dispatch(actGetUsers());
   }, [dispatch, dataUpdated]);
 
-  // Parse time helper
-  const parseTime = (timeStr: string): Date => {
+  // Parse time with dayjs
+  const parseTime = (timeStr: string): dayjs.Dayjs => {
     const [hourStr, minuteStr, period] = timeStr.split(/[:\s]/);
     let hour = parseInt(hourStr);
     const minute = parseInt(minuteStr);
@@ -43,28 +50,26 @@ const Devices = () => {
     if (period === "PM" && hour < 12) hour += 12;
     if (period === "AM" && hour === 12) hour = 0;
 
-    const now = new Date();
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-    now.setHours(hour);
-    now.setMinutes(minute);
-
-    return now;
+    return dayjs()
+      .tz("Africa/Cairo")
+      .hour(hour)
+      .minute(minute)
+      .second(0)
+      .millisecond(0);
   };
 
   // Auto-check for expired sessions
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = new Date();
+      const now = dayjs().tz("Africa/Cairo");
       const expiredUsers = users.filter((user) => {
         const endTime = parseTime(user.endTime);
-        return now >= endTime;
+        return now.isAfter(endTime);
       });
 
       if (expiredUsers.length > 0) {
         expiredUsers.forEach(async (user) => {
           try {
-            // Add revenue once per user
             await dispatch(
               actAddRevenues({
                 date: new Date().toLocaleDateString("en-CA"),
@@ -72,37 +77,36 @@ const Devices = () => {
               })
             ).unwrap();
 
-            // Set device to available
             await dispatch(
               actEditeStatus({ deviceId: user.deviceId, status: "متاح" })
             ).unwrap();
 
-            // Remove client from list
             await dispatch(actRemoveClient(user.id)).unwrap();
 
-            // Queue notification
-            setNotifQueue((prev) => [...prev, { name: user.name, deviceId: user.deviceId }]);
+            setNotifQueue((prev) => [
+              ...prev,
+              { name: user.name, deviceId: user.deviceId },
+            ]);
 
-            // Trigger update
             setDataUpdated((prev) => !prev);
           } catch (error) {
             console.error("Error handling finished session:", error);
           }
         });
       }
-    }, 30000); // Every 30s
+    }, 30000); // Every 30 seconds
 
     return () => clearInterval(interval);
   }, [users, dispatch]);
 
-  // Show one notification at a time from queue
+  // Show one notification at a time
   useEffect(() => {
     if (!showNotif && notifQueue.length > 0) {
       const next = notifQueue[0];
       setDeviceIdMessage(next.deviceId);
       setNameMessage(next.name);
       setShowNotif(true);
-      setNotifQueue((prev) => prev.slice(1)); // remove from queue
+      setNotifQueue((prev) => prev.slice(1));
     }
   }, [notifQueue, showNotif]);
 
@@ -124,7 +128,6 @@ const Devices = () => {
 
   return (
     <div className="container">
-      {/* Notification */}
       {showNotif && (
         <Notification
           deviceId={deviceIdMessage}
@@ -133,7 +136,6 @@ const Devices = () => {
         />
       )}
 
-      {/* Modal Form */}
       {showModal && (
         <ModalForm
           setShowModal={setShowModal}
@@ -144,7 +146,6 @@ const Devices = () => {
         />
       )}
 
-      {/* Extra Time Form */}
       {addExtraTime && (
         <ExtraTimeForm
           deviceId={deviceId}
@@ -154,7 +155,6 @@ const Devices = () => {
         />
       )}
 
-      {/* Add Order Form */}
       {showAddOrderForm && (
         <AddOrderForm
           deviceId={deviceId}
@@ -165,7 +165,6 @@ const Devices = () => {
         />
       )}
 
-      {/* Devices */}
       <div className="devices gridList">
         {loading === "pending" ? (
           <p className="text-4xl">جاري التحميل</p>
@@ -183,7 +182,6 @@ const Devices = () => {
         )}
       </div>
 
-      {/* Active Sessions Table */}
       <div className="users">
         <div className="w-full overflow-x-auto mt-2">
           <table className="min-w-max w-full border-separate border-spacing-2">
