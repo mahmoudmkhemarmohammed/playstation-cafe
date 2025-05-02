@@ -1,11 +1,13 @@
+import { lazy } from "react";
 import ProtectedRoute from "@components/Auth/ProtectedRoute";
 import MainLayout from "@layouts/MainLayout";
-import Devices from "@pages/Devices";
+const Devices = lazy(() => import("@pages/Devices"));
 import Home from "@pages/Home";
 import Login from "@pages/Login";
-import Products from "@pages/Products";
-import Revenues from "@pages/Revenues";
+const Products = lazy(() => import("@pages/Products"));
+const Revenues = lazy(() => import("@pages/Revenues"));
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import LoadingSuspance from "@components/feedback/LoadingSuspance";
 
 const router = createBrowserRouter([
   {
@@ -29,7 +31,9 @@ const router = createBrowserRouter([
         path: "devices",
         element: (
           <ProtectedRoute>
-            <Devices />
+            <LoadingSuspance>
+              <Devices />
+            </LoadingSuspance>
           </ProtectedRoute>
         ),
       },
@@ -37,7 +41,9 @@ const router = createBrowserRouter([
         path: "products",
         element: (
           <ProtectedRoute>
-            <Products />
+            <LoadingSuspance>
+              <Products />
+            </LoadingSuspance>
           </ProtectedRoute>
         ),
       },
@@ -45,7 +51,9 @@ const router = createBrowserRouter([
         path: "revenues",
         element: (
           <ProtectedRoute>
-            <Revenues />
+            <LoadingSuspance>
+              <Revenues />
+            </LoadingSuspance>
           </ProtectedRoute>
         ),
       },

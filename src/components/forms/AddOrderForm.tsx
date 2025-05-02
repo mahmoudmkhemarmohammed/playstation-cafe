@@ -72,7 +72,7 @@ const AddOrderForm = ({
     dispatch(actGetProducts());
   }, [dispatch]);
   return (
-    <div className="fixed w-full h-full bg-gradient-to-r from-[#9face6] to-[#74ebd5] left-0 top-0 flex justify-center items-center">
+    <div className="fixed z-[1000] w-full h-full bg-gradient-to-r from-[#9face6] to-[#74ebd5] left-0 top-0 flex justify-center items-center">
       {isLoading ? (
         <Loading />
       ) : (

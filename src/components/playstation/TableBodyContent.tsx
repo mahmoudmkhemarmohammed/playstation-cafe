@@ -1,4 +1,5 @@
 import ConfirmModal from "@components/feedback/ConfirmModal";
+import AddRevenue from "@components/forms/AddRevenue";
 import actEditeStatus from "@store/devices/act/actEditeStatus";
 import { useAppDispatch } from "@store/hooks";
 import actRemoveClient from "@store/users/act/actRemoveClient";
@@ -14,6 +15,7 @@ type TTableBodyContentProps = {
   orders: TOrder[];
   price: number;
   dataUpdated: boolean;
+  isOpenTime: boolean;
   setDataUpdated: (val: boolean) => void;
 };
 const TableBodyContent = ({
@@ -25,9 +27,11 @@ const TableBodyContent = ({
   orders,
   price,
   setDataUpdated,
+  isOpenTime,
   dataUpdated,
 }: TTableBodyContentProps) => {
   const [isDeleteSession, setIsDeleteSession] = useState(false);
+  const [isPauseTime, setIsPauseTime] = useState(false);
   const dispatch = useAppDispatch();
   const handleClick = () => {
     // Update device status to "Available"
@@ -50,6 +54,11 @@ const TableBodyContent = ({
   const handleClose = () => {
     setIsDeleteSession(!isDeleteSession);
   };
+
+
+  const handlePauseTime = () => {
+    setIsPauseTime(!isPauseTime);
+  };
   return (
     <tr className="bg-white *:rounded *:text-center *:py-4">
       <td>جهاز رقم {deviceId}</td>
@@ -62,16 +71,31 @@ const TableBodyContent = ({
         ))}
       </td>
       <td className="bg-green-400">{price}</td>
-      <td className="bg-red-400 cursor-pointer" onClick={handleClose}>
-        حذف
-        {isDeleteSession && (
-          <ConfirmModal
-            message="هل أنت متأكد من حذف الجلسة؟"
-            onClose={handleClose}
-            onConfirm={handleClick}
-          />
-        )}
-      </td>
+      {isOpenTime ? (
+        <td className="bg-yellow-400 cursor-pointer">
+          <span onClick={handlePauseTime}>إيقاف</span>
+          {isPauseTime && (
+            <AddRevenue
+              isPauseTime={isPauseTime}
+              deviceId={deviceId}
+              id={id}
+              setIsPauseTime={setIsPauseTime}
+              setDataUpdated={setDataUpdated}
+            />
+          )}
+        </td>
+      ) : (
+        <td className="bg-red-400 cursor-pointer" onClick={handleClose}>
+          حذف
+          {isDeleteSession && (
+            <ConfirmModal
+              message="هل أنت متأكد من حذف الجلسة؟"
+              onClose={handleClose}
+              onConfirm={handleClick}
+            />
+          )}
+        </td>
+      )}
     </tr>
   );
 };

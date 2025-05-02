@@ -29,6 +29,8 @@ const ModalForm = ({
     showTotal,
     calculateTotal,
     isLoading,
+    isOpenTime,
+    setIsOpenTime,
   } = useModalForm(
     deviceId,
     setShowModal,
@@ -38,7 +40,7 @@ const ModalForm = ({
   );
 
   return (
-    <div className="fixed w-full h-full bg-gradient-to-r from-[#9face6] to-[#74ebd5] left-0 top-0 flex justify-center items-center">
+    <div className="fixed z-[1000] w-full h-full bg-gradient-to-r from-[#9face6] to-[#74ebd5] left-0 top-0 flex justify-center items-center">
       {isLoading ? (
         <Loading />
       ) : (
@@ -65,35 +67,51 @@ const ModalForm = ({
             )}
           </div>
 
-          <div>
-            <label htmlFor="time" className="text-[18px]">
-              الوقت (بالدقائق)
-            </label>
+          <div className="flex-row! gap-2">
             <input
-              id="time"
-              type="number"
-              {...register("time", { valueAsNumber: true })}
-              className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
+              type="checkbox"
+              id="openTime"
+              onChange={() => setIsOpenTime(!isOpenTime)}
             />
-            {errors.time && (
-              <span className="text-red-600 text-sm mt-1">
-                {errors.time.message}
-              </span>
-            )}
+            <label htmlFor="openTime" className="text-[18px]">
+              وقت مفتوح
+            </label>
           </div>
 
-          <div>
-            <label htmlFor="sessionPrice" className="text-[18px]">
-              سعر الجلسة
-            </label>
-            <input
-              id="sessionPrice"
-              type="number"
-              value={sessionPrice === 0 ? "" : sessionPrice}
-              onChange={(e) => setSessionPrice(Number(e.target.value))}
-              className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
-            />
-          </div>
+          {!isOpenTime && (
+            <>
+              <div>
+                <label htmlFor="time" className="text-[18px]">
+                  الوقت (بالدقائق)
+                </label>
+                <input
+                defaultValue={1}
+                  id="time"
+                  type="number"
+                  {...register("time", { valueAsNumber: true })}
+                  className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
+                />
+                {errors.time && (
+                  <span className="text-red-600 text-sm mt-1">
+                    {errors.time.message}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="sessionPrice" className="text-[18px]">
+                  سعر الجلسة
+                </label>
+                <input
+                  id="sessionPrice"
+                  type="number"
+                  value={sessionPrice === 0 ? "" : sessionPrice}
+                  onChange={(e) => setSessionPrice(Number(e.target.value))}
+                  className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="text-[18px]">المأكولات / المشروبات</label>

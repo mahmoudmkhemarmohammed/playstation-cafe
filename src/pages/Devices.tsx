@@ -12,11 +12,11 @@ import ExtraTimeForm from "@components/forms/ExtraTimeForm";
 import AddOrderForm from "@components/forms/AddOrderForm";
 import actRemoveClient from "@store/users/act/actRemoveClient";
 import actAddRevenues from "@store/revenues/act/actAddRevenues";
-
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
+// Extend dayjs with plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -41,8 +41,9 @@ const Devices = () => {
     dispatch(actGetUsers());
   }, [dispatch, dataUpdated]);
 
-  // Parse time with dayjs
-  const parseTime = (timeStr: string): dayjs.Dayjs => {
+  // Parse time using dayjs
+  const parseTime = (timeStr: string) => {
+    const now = dayjs();
     const [hourStr, minuteStr, period] = timeStr.split(/[:\s]/);
     let hour = parseInt(hourStr);
     const minute = parseInt(minuteStr);
@@ -50,19 +51,15 @@ const Devices = () => {
     if (period === "PM" && hour < 12) hour += 12;
     if (period === "AM" && hour === 12) hour = 0;
 
-    return dayjs()
-      .tz("Africa/Cairo")
-      .hour(hour)
-      .minute(minute)
-      .second(0)
-      .millisecond(0);
+    return now.hour(hour).minute(minute).second(0).millisecond(0);
   };
 
   // Auto-check for expired sessions
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = dayjs().tz("Africa/Cairo");
+      const now = dayjs();
       const expiredUsers = users.filter((user) => {
+        if (user.isOpenTime) return false;
         const endTime = parseTime(user.endTime);
         return now.isAfter(endTime);
       });
@@ -94,12 +91,12 @@ const Devices = () => {
           }
         });
       }
-    }, 30000); // Every 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [users, dispatch]);
 
-  // Show one notification at a time
+  // Show one notification at a time from queue
   useEffect(() => {
     if (!showNotif && notifQueue.length > 0) {
       const next = notifQueue[0];

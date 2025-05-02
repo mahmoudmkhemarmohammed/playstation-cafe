@@ -22,6 +22,7 @@ const useModalForm = (
   const [orders, setOrders] = useState<TOrder[]>([]);
   const [sessionPrice, setSessionPrice] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isOpenTime, setIsOpenTime] = useState(false);
 
   const dispatch = useAppDispatch();
   const { products } = useAppSelector((state) => state.products);
@@ -34,8 +35,8 @@ const useModalForm = (
   } = useForm<TaddSessionSchema>({
     resolver: zodResolver(addSessionSchema),
     mode: "onBlur",
-    defaultValues: { name: "", time: undefined },
   });
+  
 
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString([], {
@@ -63,8 +64,9 @@ const useModalForm = (
   const showTotal = (): boolean => {
     const time = watch("time") || 0;
     const hasValidOrders = orders.some((order) => order.quantity > 0);
-    return (sessionPrice > 0 && time > 0) || hasValidOrders;
+    return (sessionPrice > 0 && time > 0 && !isOpenTime) || hasValidOrders;
   };
+  
 
   const handleProductClick = (product: TProduct) => {
     if (!orders.find((order) => order.id === product.id)) {
@@ -83,21 +85,27 @@ const useModalForm = (
   };
 
   const onSubmit = (data: TaddSessionSchema) => {
-    setIsLoading(!isLoading);
-    const endTime = new Date(currentTime.getTime() + data.time * 60 * 1000);
+    setIsLoading(true);
+
+    const endTime =
+      !isOpenTime && data.time
+        ? new Date(currentTime.getTime() + data.time * 60 * 1000)
+        : "---";
+
     const filteredOrders = orders.filter((order) => order.quantity > 0);
-    const sessionRevenue = calculateSessionRevenue();
+    const sessionRevenue = isOpenTime ? 0 : calculateSessionRevenue();
     const ordersRevenue = calculateOrdersRevenue();
     const totalPrice = sessionRevenue + ordersRevenue;
 
     const formData = {
       name: data.name,
       startTime: formatTime(currentTime),
-      endTime: formatTime(endTime),
+      endTime: isOpenTime ? "---" : formatTime(endTime as Date),
       orders: filteredOrders,
-      price: totalPrice,
+      price: isOpenTime ? "----" : totalPrice,
       deviceId,
-      sessionPrice,
+      sessionPrice: isOpenTime ? 0 : sessionPrice,
+      isOpenTime,
     };
 
     dispatch(actAddClient(formData))
@@ -107,7 +115,7 @@ const useModalForm = (
         setTimeout(() => {
           setDataUpdated(!dataUpdated);
           setShowModal(!showModal);
-          setIsLoading(!isLoading)
+          setIsLoading(false);
         }, 1500);
       });
   };
@@ -129,7 +137,9 @@ const useModalForm = (
     orders,
     showTotal,
     calculateTotal,
-    isLoading
+    isLoading,
+    isOpenTime,
+    setIsOpenTime,
   };
 };
 

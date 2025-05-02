@@ -8,7 +8,7 @@ type TFormData = {
   startTime: string;
   endTime: string;
   orders: TOrder[];
-  price: number;
+  price: number | string;
   deviceId: number
   sessionPrice: number
 };

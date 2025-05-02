@@ -1,11 +1,12 @@
 import img from "@assets/images/playstation_card.jpg";
+import bluardo from "@assets/images/bluardo.jpg"
 import { TDevice } from "@types";
 
 const PSCard = ({id, name, status , handleNewSession , setDeviceId , handleExtraTime , handleAddOrders}: TDevice) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow" onClick={() => setDeviceId(id)}>
       <div className="img">
-        <img src={img} alt="img-card" className="rounded-xl" />
+        <img src={name.includes("بلياردو") ? bluardo: img} alt="img-card" className="rounded-xl" />
       </div>
 
       <div
