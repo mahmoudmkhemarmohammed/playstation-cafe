@@ -10,10 +10,12 @@ const AddRevenue = ({
   setIsPauseTime,
   isPauseTime,
   setDataUpdated,
+  dataUpdated
 }: {
   id: number;
   deviceId: number;
   isPauseTime: boolean;
+  dataUpdated: boolean
   setIsPauseTime: (val: boolean) => void;
   setDataUpdated: (val: boolean) => void;
 }) => {
@@ -34,7 +36,7 @@ const AddRevenue = ({
 
       await dispatch(actRemoveClient(id)).unwrap();
 
-      setDataUpdated((prev) => !prev);
+      setDataUpdated(!dataUpdated);
     } catch (error) {
       console.error("Error handling finished session:", error);
     }
@@ -46,7 +48,7 @@ const AddRevenue = ({
       actEditeStatus({ deviceId: deviceId, status: "متاح" })
     ).unwrap();
     setIsPauseTime(!isPauseTime);
-    setDataUpdated((prev) => !prev);
+    setDataUpdated(!dataUpdated);
   };
   return (
     <div className="fixed z-[1000] w-full h-full bg-gradient-to-r from-[#9face6] to-[#74ebd5] left-0 top-0 flex justify-center items-center">

@@ -81,6 +81,7 @@ const TableBodyContent = ({
               id={id}
               setIsPauseTime={setIsPauseTime}
               setDataUpdated={setDataUpdated}
+              dataUpdated={dataUpdated}
             />
           )}
         </td>
