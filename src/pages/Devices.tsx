@@ -16,7 +16,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
-// Extend dayjs with plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -35,32 +34,19 @@ const Devices = () => {
   const { data: devices, loading } = useAppSelector((state) => state.devices);
   const { data: users } = useAppSelector((state) => state.users);
 
-  // Load data initially and when updated
   useEffect(() => {
     dispatch(actGetDevices());
     dispatch(actGetUsers());
   }, [dispatch, dataUpdated]);
 
-  // Parse time using dayjs
-  const parseTime = (timeStr: string) => {
-    const now = dayjs().tz("Africa/Cairo");
-    const [hourStr, minuteStr, period] = timeStr.split(/[:\s]/);
-    let hour = parseInt(hourStr);
-    const minute = parseInt(minuteStr);
-
-    if (period === "PM" && hour < 12) hour += 12;
-    if (period === "AM" && hour === 12) hour = 0;
-
-    return now.hour(hour).minute(minute).second(0).millisecond(0);
-  };
-
-  // Auto-check for expired sessions
   useEffect(() => {
     const interval = setInterval(() => {
       const now = dayjs().tz("Africa/Cairo");
+
       const expiredUsers = users.filter((user) => {
-        if (user.isOpenTime) return false;
-        const endTime = parseTime(user.endTime);
+        if (user.isOpenTime || !user.endTime) return false;
+
+        const endTime = dayjs(user.endTime).tz("Africa/Cairo");
         return now.isAfter(endTime);
       });
 
@@ -69,7 +55,7 @@ const Devices = () => {
           try {
             await dispatch(
               actAddRevenues({
-                date: dayjs().tz("Africa/Cairo").format("YYYY-MM-DD"),
+                date: now.format("YYYY-MM-DD"),
                 total: user.price,
               })
             ).unwrap();
@@ -96,7 +82,6 @@ const Devices = () => {
     return () => clearInterval(interval);
   }, [users, dispatch]);
 
-  // Show one notification at a time from queue
   useEffect(() => {
     if (!showNotif && notifQueue.length > 0) {
       const next = notifQueue[0];

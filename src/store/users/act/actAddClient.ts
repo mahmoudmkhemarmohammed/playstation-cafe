@@ -6,7 +6,7 @@ import axios from "axios";
 type TFormData = {
   name: string;
   startTime: string;
-  endTime: string;
+  endTime: string | null;
   orders: TOrder[];
   price: number | string;
   deviceId: number

@@ -5,6 +5,12 @@ import { useAppDispatch } from "@store/hooks";
 import actRemoveClient from "@store/users/act/actRemoveClient";
 import { TOrder } from "@types";
 import { useState } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 type TTableBodyContentProps = {
   id: number;
@@ -18,6 +24,7 @@ type TTableBodyContentProps = {
   isOpenTime: boolean;
   setDataUpdated: (val: boolean) => void;
 };
+
 const TableBodyContent = ({
   id,
   deviceId,
@@ -33,38 +40,44 @@ const TableBodyContent = ({
   const [isDeleteSession, setIsDeleteSession] = useState(false);
   const [isPauseTime, setIsPauseTime] = useState(false);
   const dispatch = useAppDispatch();
+
   const handleClick = () => {
-    // Update device status to "Available"
     dispatch(actEditeStatus({ deviceId: deviceId, status: "متاح" }))
       .unwrap()
       .then(() => {
         setTimeout(() => {
-          // Delete user session
           dispatch(actRemoveClient(id))
             .unwrap()
             .then(() => {
               setTimeout(() => {
-                // Trigger data refresh
                 setDataUpdated(!dataUpdated);
               }, 1000);
             });
         }, 1000);
       });
   };
+
   const handleClose = () => {
     setIsDeleteSession(!isDeleteSession);
   };
 
-
   const handlePauseTime = () => {
     setIsPauseTime(!isPauseTime);
   };
+
+  const formattedStartTime = dayjs(startTime)
+    .tz("Africa/Cairo")
+    .format("hh:mm A"); // 12-hour format with AM/PM
+  const formattedEndTime = endTime
+    ? dayjs(endTime).tz("Africa/Cairo").format("hh:mm A") // 12-hour format with AM/PM
+    : "غير محدد";
+
   return (
     <tr className="bg-white *:rounded *:text-center *:py-4">
       <td>جهاز رقم {deviceId}</td>
       <td>{name}</td>
-      <td>{startTime}</td>
-      <td>{endTime}</td>
+      <td>{formattedStartTime}</td>
+      <td>{formattedEndTime}</td>
       <td className="flex flex-col justify-center items-center">
         {orders.map((el) => (
           <span key={el.id}>{`${el.quantity} ${el.name}`}</span>

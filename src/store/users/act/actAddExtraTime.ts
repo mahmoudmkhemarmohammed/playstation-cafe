@@ -13,7 +13,6 @@ const actAddExtraTime = createAsyncThunk(
   async (formData: TFormData, thunkAPI) => {
     const { rejectWithValue } = thunkAPI;
     try {
-
       const selectedClientRes = await axios.get(
         `/clients?deviceId=${formData.deviceId}`
       );
@@ -23,33 +22,14 @@ const actAddExtraTime = createAsyncThunk(
         return rejectWithValue("لم يتم العثور على العميل.");
       }
 
-      
-      const [time, modifier] = selectedClient.endTime.split(" ");
-      const [rawHours, minutes] = time.split(":").map(Number);
-      let hours = rawHours;
+      const currentTime = new Date(selectedClient.endTime);
+      if (isNaN(currentTime.getTime())) {
+        return rejectWithValue("الوقت المخزن غير صالح.");
+      }
 
-      if (modifier === "PM" && hours !== 12) hours += 12;
-      if (modifier === "AM" && hours === 12) hours = 0;
-
-      const currentTime = new Date();
-      currentTime.setHours(hours);
-      currentTime.setMinutes(minutes);
-
-      
       currentTime.setMinutes(currentTime.getMinutes() + formData.extraTime);
 
-      
-      let newHours = currentTime.getHours();
-      const newMinutes = currentTime.getMinutes();
-      const newModifier = newHours >= 12 ? "PM" : "AM";
-
-      newHours = newHours % 12;
-      newHours = newHours === 0 ? 12 : newHours;
-
-      const formattedEndTime = `${String(newHours).padStart(2, "0")}:${String(
-        newMinutes
-      ).padStart(2, "0")} ${newModifier}`;
-
+      const formattedEndTime = currentTime.toISOString();
 
       const res = await axios.patch(`/clients/${selectedClient.id}`, {
         endTime: formattedEndTime,

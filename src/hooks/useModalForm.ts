@@ -10,6 +10,7 @@ import {
 } from "@validations/addSessionSchema";
 import { TOrder, TProduct } from "@types";
 import actEditeStatus from "@store/devices/act/actEditeStatus";
+import dayjs from "dayjs";
 
 const useModalForm = (
   deviceId: number,
@@ -36,15 +37,6 @@ const useModalForm = (
     resolver: zodResolver(addSessionSchema),
     mode: "onBlur",
   });
-  
-
-  const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   const calculateOrdersRevenue = (): number => {
     return orders.reduce((total, order) => {
@@ -54,7 +46,7 @@ const useModalForm = (
   };
 
   const calculateSessionRevenue = (): number => {
-    return sessionPrice; // السعر اللي المستخدم كتبه مباشرة
+    return sessionPrice;
   };
 
   const calculateTotal = (): number => {
@@ -66,7 +58,6 @@ const useModalForm = (
     const hasValidOrders = orders.some((order) => order.quantity > 0);
     return (sessionPrice > 0 && time > 0 && !isOpenTime) || hasValidOrders;
   };
-  
 
   const handleProductClick = (product: TProduct) => {
     if (!orders.find((order) => order.id === product.id)) {
@@ -90,7 +81,7 @@ const useModalForm = (
     const endTime =
       !isOpenTime && data.time
         ? new Date(currentTime.getTime() + data.time * 60 * 1000)
-        : "---";
+        : null;
 
     const filteredOrders = orders.filter((order) => order.quantity > 0);
     const sessionRevenue = isOpenTime ? 0 : calculateSessionRevenue();
@@ -99,8 +90,8 @@ const useModalForm = (
 
     const formData = {
       name: data.name,
-      startTime: formatTime(currentTime),
-      endTime: isOpenTime ? "---" : formatTime(endTime as Date),
+      startTime: dayjs(currentTime).toISOString(),
+      endTime: isOpenTime || !endTime ? null : dayjs(endTime).toISOString(),
       orders: filteredOrders,
       price: isOpenTime ? "----" : totalPrice,
       deviceId,
