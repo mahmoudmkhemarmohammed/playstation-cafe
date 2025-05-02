@@ -43,7 +43,7 @@ const Devices = () => {
 
   // Parse time using dayjs
   const parseTime = (timeStr: string) => {
-    const now = dayjs();
+    const now = dayjs().tz("Africa/Cairo");
     const [hourStr, minuteStr, period] = timeStr.split(/[:\s]/);
     let hour = parseInt(hourStr);
     const minute = parseInt(minuteStr);
@@ -57,7 +57,7 @@ const Devices = () => {
   // Auto-check for expired sessions
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = dayjs();
+      const now = dayjs().tz("Africa/Cairo");
       const expiredUsers = users.filter((user) => {
         if (user.isOpenTime) return false;
         const endTime = parseTime(user.endTime);
@@ -69,7 +69,7 @@ const Devices = () => {
           try {
             await dispatch(
               actAddRevenues({
-                date: new Date().toLocaleDateString("en-CA"),
+                date: dayjs().tz("Africa/Cairo").format("YYYY-MM-DD"),
                 total: user.price,
               })
             ).unwrap();
