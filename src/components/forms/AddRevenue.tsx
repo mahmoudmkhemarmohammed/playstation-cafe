@@ -1,3 +1,4 @@
+import Loading from "@components/feedback/Loading";
 import actEditeStatus from "@store/devices/act/actEditeStatus";
 import { useAppDispatch } from "@store/hooks";
 import actAddRevenues from "@store/revenues/act/actAddRevenues";
@@ -10,19 +11,21 @@ const AddRevenue = ({
   setIsPauseTime,
   isPauseTime,
   setDataUpdated,
-  dataUpdated
+  dataUpdated,
 }: {
   id: number;
   deviceId: number;
   isPauseTime: boolean;
-  dataUpdated: boolean
+  dataUpdated: boolean;
   setIsPauseTime: (val: boolean) => void;
   setDataUpdated: (val: boolean) => void;
 }) => {
   const [price, setPrice] = useState<number>(0);
   const dispatch = useAppDispatch();
+  const [isLoading, setIsLoading] = useState(false);
   const sendData = async () => {
     try {
+      setIsLoading(!isLoading);
       await dispatch(
         actAddRevenues({
           date: new Date().toLocaleDateString("en-CA"),
@@ -37,6 +40,7 @@ const AddRevenue = ({
       await dispatch(actRemoveClient(id)).unwrap();
 
       setDataUpdated(!dataUpdated);
+      setIsLoading(!isLoading);
     } catch (error) {
       console.error("Error handling finished session:", error);
     }
@@ -52,38 +56,42 @@ const AddRevenue = ({
   };
   return (
     <div className="fixed z-[1000] w-full h-full bg-gradient-to-r from-[#9face6] to-[#74ebd5] left-0 top-0 flex justify-center items-center">
-      <div className="bg-white w-[450px] shadow rounded-xl p-3 flex flex-col gap-3 py-7 px-5 *:flex *:flex-col">
-        <h2>أيقاف الجلسة</h2>
-        <div>
-          <label htmlFor="price" className="text-[18px]">
-            ادخل الارباح
-          </label>
-          <input
-            onChange={(e) => setPrice(+e.target.value)}
-            id="price"
-            type="number"
-            className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
-          />
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <div className="bg-white w-[450px] shadow rounded-xl p-3 flex flex-col gap-3 py-7 px-5 *:flex *:flex-col">
+          <h2>أيقاف الجلسة</h2>
+          <div>
+            <label htmlFor="price" className="text-[18px]">
+              ادخل الارباح
+            </label>
+            <input
+              onChange={(e) => setPrice(+e.target.value)}
+              id="price"
+              type="number"
+              className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
+            />
+          </div>
+          <button
+            className="text-[18px] bg-green-400 p-2 rounded-md cursor-pointer"
+            onClick={sendData}
+          >
+            حفظ
+          </button>
+          <button
+            className="text-[18px] bg-red-400 p-2 rounded-md cursor-pointer"
+            onClick={() => setIsPauseTime(false)}
+          >
+            إغلاق
+          </button>
+          <button
+            className="text-[18px] bg-red-400 p-2 rounded-md cursor-pointer"
+            onClick={handleRemoveSession}
+          >
+            حذف الجلسة
+          </button>
         </div>
-        <button
-          className="text-[18px] bg-green-400 p-2 rounded-md cursor-pointer"
-          onClick={sendData}
-        >
-          حفظ
-        </button>
-        <button
-          className="text-[18px] bg-red-400 p-2 rounded-md cursor-pointer"
-          onClick={() => setIsPauseTime(false)}
-        >
-          إغلاق
-        </button>
-        <button
-          className="text-[18px] bg-red-400 p-2 rounded-md cursor-pointer"
-          onClick={handleRemoveSession}
-        >
-          حذف الجلسة
-        </button>
-      </div>
+      )}
     </div>
   );
 };
