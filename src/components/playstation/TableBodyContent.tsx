@@ -21,7 +21,6 @@ type TTableBodyContentProps = {
   orders: TOrder[];
   price: number;
   dataUpdated: boolean;
-  isOpenTime: boolean;
   setDataUpdated: (val: boolean) => void;
 };
 
@@ -34,7 +33,6 @@ const TableBodyContent = ({
   orders,
   price,
   setDataUpdated,
-  isOpenTime,
   dataUpdated,
 }: TTableBodyContentProps) => {
   const [isDeleteSession, setIsDeleteSession] = useState(false);
@@ -84,32 +82,29 @@ const TableBodyContent = ({
         ))}
       </td>
       <td className="bg-green-400">{price}</td>
-      {isOpenTime ? (
-        <td className="bg-yellow-400 cursor-pointer">
-          <span onClick={handlePauseTime}>إيقاف</span>
-          {isPauseTime && (
-            <AddRevenue
-              isPauseTime={isPauseTime}
-              deviceId={deviceId}
-              id={id}
-              setIsPauseTime={setIsPauseTime}
-              setDataUpdated={setDataUpdated}
-              dataUpdated={dataUpdated}
-            />
-          )}
-        </td>
-      ) : (
-        <td className="bg-red-400 cursor-pointer" onClick={handleClose}>
-          حذف
-          {isDeleteSession && (
-            <ConfirmModal
-              message="هل أنت متأكد من حذف الجلسة؟"
-              onClose={handleClose}
-              onConfirm={handleClick}
-            />
-          )}
-        </td>
-      )}
+      <td className="bg-yellow-400 cursor-pointer">
+        <span onClick={handlePauseTime}>إيقاف</span>
+        {isPauseTime && (
+          <AddRevenue
+            isPauseTime={isPauseTime}
+            deviceId={deviceId}
+            id={id}
+            setIsPauseTime={setIsPauseTime}
+            setDataUpdated={setDataUpdated}
+            dataUpdated={dataUpdated}
+          />
+        )}
+      </td>
+      <td className="bg-red-400 cursor-pointer" onClick={handleClose}>
+        حذف
+        {isDeleteSession && (
+          <ConfirmModal
+            message="هل أنت متأكد من حذف الجلسة؟"
+            onClose={handleClose}
+            onConfirm={handleClick}
+          />
+        )}
+      </td>
     </tr>
   );
 };

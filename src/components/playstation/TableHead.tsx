@@ -8,6 +8,7 @@ const TableHead = () => {
         <td>وقت النهاية</td>
         <td>المشروبات & المأكولات</td>
         <td>السعر</td>
+        <td>إيقاف</td>
         <td>إجراء</td>
       </tr>
     </thead>
