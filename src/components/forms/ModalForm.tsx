@@ -85,7 +85,7 @@ const ModalForm = ({
                   الوقت (بالدقائق)
                 </label>
                 <input
-                defaultValue={1}
+                  defaultValue={1}
                   id="time"
                   type="number"
                   {...register("time", { valueAsNumber: true })}
@@ -116,34 +116,36 @@ const ModalForm = ({
           <div>
             <label className="text-[18px]">المأكولات / المشروبات</label>
             <div className="flex justify-between flex-wrap gap-2 mt-3">
-              {products.map((product: TProduct) => {
-                const selectedOrder = orders.find(
-                  (order) => order.id === product.id
-                );
-                return (
-                  <div
-                    key={product.id}
-                    className="flex justify-between items-center gap-2 bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-2 rounded w-[45%] cursor-pointer"
-                    onClick={() => handleProductClick(product)}
-                  >
-                    {product.name}
-                    {selectedOrder && (
-                      <input
-                        type="number"
-                        value={selectedOrder.quantity}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) =>
-                          handleQuantityChange(
-                            product.id,
-                            Number(e.target.value)
-                          )
-                        }
-                        className="bg-white h-full min-w-[10%] rounded border-0 outline-0 p-1"
-                      />
-                    )}
-                  </div>
-                );
-              })}
+              {products
+                .filter((product) => product.quantity > 0)
+                .map((product: TProduct) => {
+                  const selectedOrder = orders.find(
+                    (order) => order.id === product.id
+                  );
+                  return (
+                    <div
+                      key={product.id}
+                      className="flex justify-between items-center gap-2 bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-2 rounded w-[45%] cursor-pointer"
+                      onClick={() => handleProductClick(product)}
+                    >
+                      {product.name}
+                      {selectedOrder && (
+                        <input
+                          type="number"
+                          value={selectedOrder.quantity}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) =>
+                            handleQuantityChange(
+                              product.id,
+                              Number(e.target.value)
+                            )
+                          }
+                          className="bg-white h-full min-w-[10%] rounded border-0 outline-0 p-1"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
 

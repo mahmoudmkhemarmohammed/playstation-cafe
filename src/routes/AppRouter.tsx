@@ -8,6 +8,7 @@ const Products = lazy(() => import("@pages/Products"));
 const Revenues = lazy(() => import("@pages/Revenues"));
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LoadingSuspance from "@components/feedback/LoadingSuspance";
+import IsAdmin from "@components/Auth/IsAdmin";
 
 const router = createBrowserRouter([
   {
@@ -20,19 +21,19 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: "home",
+        path: "/devices",
         element: (
           <ProtectedRoute>
-            <Home />
+            <Devices />
           </ProtectedRoute>
         ),
       },
       {
-        path: "devices",
+        path: "info",
         element: (
           <ProtectedRoute>
             <LoadingSuspance>
-              <Devices />
+              <Home />
             </LoadingSuspance>
           </ProtectedRoute>
         ),
@@ -51,9 +52,11 @@ const router = createBrowserRouter([
         path: "revenues",
         element: (
           <ProtectedRoute>
-            <LoadingSuspance>
-              <Revenues />
-            </LoadingSuspance>
+            <IsAdmin>
+              <LoadingSuspance>
+                <Revenues />
+              </LoadingSuspance>
+            </IsAdmin>
           </ProtectedRoute>
         ),
       },

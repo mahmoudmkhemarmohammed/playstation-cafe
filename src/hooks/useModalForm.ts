@@ -11,6 +11,7 @@ import {
 import { TOrder, TProduct } from "@types";
 import actEditeStatus from "@store/devices/act/actEditeStatus";
 import dayjs from "dayjs";
+import actChangeProductQuantity from "@store/products/act/actChangeProductQuantity";
 
 const useModalForm = (
   deviceId: number,
@@ -27,6 +28,8 @@ const useModalForm = (
 
   const dispatch = useAppDispatch();
   const { products } = useAppSelector((state) => state.products);
+
+  console.log(orders);
 
   const {
     register,
@@ -101,6 +104,11 @@ const useModalForm = (
 
     dispatch(actAddClient(formData))
       .unwrap()
+      .then(() => {
+        if (orders.length > 0) {
+          dispatch(actChangeProductQuantity(orders));
+        }
+      })
       .then(() => {
         dispatch(actEditeStatus({ deviceId, status: "مستخدم" }));
         setTimeout(() => {

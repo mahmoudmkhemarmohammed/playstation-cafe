@@ -13,7 +13,7 @@ export type TUser = {
   price: number;
   deviceId: number;
   hourPrice: number;
-  isOpenTime: boolean
+  isOpenTime: boolean;
 };
 
 export type TOwner = {
@@ -21,4 +21,5 @@ export type TOwner = {
   firstName: string;
   lastName: string;
   email: string;
+  role: "admin" | "user";
 };

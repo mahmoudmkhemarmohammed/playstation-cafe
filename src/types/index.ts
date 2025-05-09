@@ -6,5 +6,15 @@ import { type TOrder } from "./user.type";
 import { type TProduct } from "./product.type";
 import { type TStatus } from "./status.type";
 import { type TOwner } from "./user.type";
-
-export { TLoading, TDevice, isString, TUser, TOrder, TProduct , TStatus , TOwner};
+import { type TChangeQuantity } from "./product.type";
+export {
+  TLoading,
+  TDevice,
+  isString,
+  TUser,
+  TOrder,
+  TProduct,
+  TStatus,
+  TOwner,
+  TChangeQuantity,
+};

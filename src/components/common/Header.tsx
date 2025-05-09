@@ -1,5 +1,5 @@
 import { logOut } from "@store/auth/authSlice";
-import { useAppDispatch } from "@store/hooks";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { useEffect, useState } from "react";
 import { HiHeart } from "react-icons/hi";
 import { IoIosLogOut, IoMdClose } from "react-icons/io";
@@ -9,6 +9,7 @@ import { HiMiniBars3BottomLeft } from "react-icons/hi2";
 const Header = () => {
   const [nav, setNav] = useState(false);
   const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
 
   const { pathname } = useLocation();
 
@@ -17,10 +18,10 @@ const Header = () => {
   }, [pathname]);
 
   return (
-    <header className="bg-white shadow p-3.5 h-24 sticky top-0 z-50" >
+    <header className="bg-white shadow p-3.5 h-24 sticky top-0 z-50">
       <div className="container h-full flex justify-between items-center">
         <div className="logo">
-          <NavLink to={"/home"}>
+          <NavLink to={"/devices"}>
             <h1 className="text-xl font-bold flex flex-col-reverse items-center">
               VIP <HiHeart className="text-red-500" size={35} />
             </h1>
@@ -33,17 +34,19 @@ const Header = () => {
           } max-lg:top-24 max-lg:flex-col max-lg:items-center`}
         >
           <li>
-            <NavLink to={"/home"}>الرئيسية</NavLink>
+            <NavLink to={"/devices"}>الأجهزة</NavLink>
           </li>
           <li>
-            <NavLink to={"/devices"}>الأجهزة</NavLink>
+            <NavLink to={"/info"}>معلومات</NavLink>
           </li>
           <li>
             <NavLink to={"/products"}>المنتجات</NavLink>
           </li>
-          <li>
-            <NavLink to={"/revenues"}>الإيرادات</NavLink>
-          </li>
+          {user?.role === "admin" && (
+            <li>
+              <NavLink to={"/revenues"}>الإيرادات</NavLink>
+            </li>
+          )}
         </ul>
         {nav ? (
           <IoMdClose

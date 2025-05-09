@@ -3,6 +3,8 @@ import actGetProducts from "./act/actGetProducts";
 import { isString, TLoading, TProduct } from "@types";
 import actAddProducts from "./act/actAddProducts";
 import actEditProduct from "./act/actEditProduct";
+import actRemoveProduct from "./act/actRemoveProduct";
+import actChangeProductQuantity from "./act/actChangeProductQuantity";
 
 type TProductsState = {
   loading: TLoading;
@@ -64,6 +66,38 @@ const productsSlice = createSlice({
       state.error = null;
     });
     builder.addCase(actEditProduct.rejected, (state, action) => {
+      state.loading = "failed";
+      if (isString(action.payload)) {
+        state.error = action.payload;
+      }
+    });
+
+    // changeQuantity
+    builder.addCase(actChangeProductQuantity.pending, (state) => {
+      state.loading = "idle";
+      state.error = null;
+    });
+    builder.addCase(actChangeProductQuantity.fulfilled, (state) => {
+      state.loading = "succeeded";
+      state.error = null;
+    });
+    builder.addCase(actChangeProductQuantity.rejected, (state, action) => {
+      state.loading = "failed";
+      if (isString(action.payload)) {
+        state.error = action.payload;
+      }
+    });
+
+    // Remove Product
+    builder.addCase(actRemoveProduct.pending, (state) => {
+      state.loading = "idle";
+      state.error = null;
+    });
+    builder.addCase(actRemoveProduct.fulfilled, (state) => {
+      state.loading = "succeeded";
+      state.error = null;
+    });
+    builder.addCase(actRemoveProduct.rejected, (state, action) => {
       state.loading = "failed";
       if (isString(action.payload)) {
         state.error = action.payload;

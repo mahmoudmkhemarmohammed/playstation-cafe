@@ -3,11 +3,11 @@ import actAuthLogin from "@store/auth/act/actAuthLogin";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { signInSchema, TsignInType } from "@validations/signInSchema";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const { loading, error , accessToken} = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const {
     register,
@@ -18,10 +18,13 @@ const Login = () => {
     mode: "onBlur",
   });
 
+  if(accessToken) {
+    return <Navigate to={"/devices"}/>
+  }
   const submitForm: SubmitHandler<TsignInType> = (data) => {
     dispatch(actAuthLogin(data))
       .unwrap()
-      .then(() => navigate("/home"));
+      .then(() => navigate("/devices"));
   };
   return (
     <div className="h-screen flex items-center justify-center">
