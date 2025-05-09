@@ -115,7 +115,7 @@ const ModalForm = ({
 
           <div>
             <label className="text-[18px]">المأكولات / المشروبات</label>
-            <div className="flex justify-between flex-wrap gap-2 mt-3">
+            <div className="flex justify-between flex-wrap gap-2 mt-3 overflow-y-scroll h-[110px]">
               {products
                 .filter((product) => product.quantity > 0)
                 .map((product: TProduct) => {
