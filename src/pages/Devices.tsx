@@ -17,8 +17,6 @@ import timezone from "dayjs/plugin/timezone";
 import Notification from "@components/feedback/Notification";
 import actAddClientToHistory from "@store/history/act/actAddClientToHistory";
 
-// Dayjs plugins setup
-
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -32,6 +30,7 @@ const Devices = () => {
   const [showAddOrderForm, setShowAddOrderForm] = useState(false);
   const [notifQueue, setNotifQueue] = useState<any[]>([]);
   const [showNotif, setShowNotif] = useState(false);
+  const [notifiedUsers, setNotifiedUsers] = useState<number[]>([]); // ✅ Anti-Repeat
 
   const dispatch = useAppDispatch();
   const { data: devices, loading } = useAppSelector((state) => state.devices);
@@ -48,6 +47,8 @@ const Devices = () => {
 
       const expiredUsers = users.filter((user) => {
         if (user.isOpenTime || !user.endTime) return false;
+        if (notifiedUsers.includes(user.id)) return false;
+
         const endTime = dayjs(user.endTime).tz("Africa/Cairo");
         return now.isAfter(endTime);
       });
@@ -56,14 +57,16 @@ const Devices = () => {
         expiredUsers.forEach((user) => {
           setNotifQueue((prev) => [
             ...prev,
-            { name: user.name, deviceId: user.deviceId },
+            { name: user.name, deviceId: user.deviceId, userId: user.id },
           ]);
+
+          setNotifiedUsers((prev) => [...prev, user.id]);
         });
       }
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [users]);
+  }, [users, notifiedUsers]);
 
   useEffect(() => {
     if (!showNotif && notifQueue.length > 0) {
@@ -105,7 +108,6 @@ const Devices = () => {
       if (!user) return;
 
       await dispatch(actAddClientToHistory(user)).unwrap();
-
       await dispatch(
         actAddRevenues({
           date: dayjs().tz("Africa/Cairo").format("YYYY-MM-DD"),

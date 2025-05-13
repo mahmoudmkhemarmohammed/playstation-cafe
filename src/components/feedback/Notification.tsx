@@ -1,4 +1,4 @@
-// components/ui/Notification.tsx
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import sound from "@assets/sounds/timeout-90320.mp3";
 
@@ -17,6 +17,22 @@ const Notification = ({
   onAddExtraTime,
   onEndSession,
 }: Props) => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 1;
+      audioRef.current.play();
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -52,7 +68,7 @@ const Notification = ({
           إغلاق
         </span>
 
-        <audio src={sound} autoPlay loop></audio>
+        <audio ref={audioRef} src={sound} loop />
       </motion.div>
     </AnimatePresence>
   );

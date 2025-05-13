@@ -8,14 +8,27 @@ const actDeleteAllRevenues = createAsyncThunk(
   async (_, thunkAPI) => {
     const { rejectWithValue } = thunkAPI;
     try {
-      const res = await axios.get("/revenues");
-      const revenues = res.data;
+      // Get all revenues
+      const resRevenues = await axios.get("/revenues");
+      const revenues: TRevenue[] = resRevenues.data;
 
-      const deletePromises = revenues.map((revenues: TRevenue) =>
-        axios.delete(`revenues/${revenues.id}`)
+      // Delete all revenues
+      const deleteRevenuePromises = revenues.map((revenue) =>
+        axios.delete(`/revenues/${revenue.id}`)
       );
 
-      await Promise.all(deletePromises);
+      // Get all history
+      const resHistory = await axios.get("/history");
+      const history = resHistory.data;
+
+      // Delete all history
+      const deleteHistoryPromises = history.map((item: any) =>
+        axios.delete(`/history/${item.id}`)
+      );
+
+      // Wait for all deletions (revenues + history)
+      await Promise.all([...deleteRevenuePromises, ...deleteHistoryPromises]);
+
       return [];
     } catch (error) {
       return rejectWithValue(axiosErrorHandler(error));
