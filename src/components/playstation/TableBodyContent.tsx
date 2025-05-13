@@ -74,7 +74,7 @@ const TableBodyContent = ({
     : "غير محدد";
 
     const onSubmit = () => {
-      dispatch(actAddClientToHistory({deviceId , endTime , startTime , price , name , orders , id , hourPrice , isOpenTime}))
+      dispatch(actAddClientToHistory({deviceId , endTime , startTime , price , name , orders}))
     }
 
   return (
