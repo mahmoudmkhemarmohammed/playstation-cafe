@@ -73,8 +73,8 @@ const TableBodyContent = ({
     ? dayjs(endTime).tz("Africa/Cairo").format("hh:mm A") // 12-hour format with AM/PM
     : "غير محدد";
 
-    const onSubmit = () => {
-      dispatch(actAddClientToHistory({deviceId , endTime , startTime , price , name , orders}))
+    const onSubmit = async () => {
+      await dispatch(actAddClientToHistory({deviceId , endTime , startTime , price , name , orders}))
     }
 
   return (

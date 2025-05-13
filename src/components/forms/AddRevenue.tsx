@@ -14,6 +14,7 @@ const AddRevenue = ({
   setDataUpdated,
   dataUpdated,
   timeStart,
+  onSubmit,
 }: {
   id: number;
   deviceId: number;
@@ -22,6 +23,7 @@ const AddRevenue = ({
   setIsPauseTime: (val: boolean) => void;
   setDataUpdated: (val: boolean) => void;
   timeStart: string;
+  onSubmit: () => void;
 }) => {
   const dateNow = new Date();
   const [price, setPrice] = useState<null | number>(null);
@@ -36,16 +38,16 @@ const AddRevenue = ({
 
   const diffInMinutes = end.diff(start, "minute");
 
-
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const sendData = async () => {
     try {
       setIsLoading(!isLoading);
+      onSubmit();
       await dispatch(
         actAddRevenues({
           date: new Date().toLocaleDateString("en-CA"),
-          total: price !== null ? price: 0,
+          total: price !== null ? price : 0,
         })
       ).unwrap();
 

@@ -1,7 +1,16 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { TUser } from "@types";
+import { TOrder } from "@types";
 import axiosErrorHandler from "@utils/axiosErrorHandler";
 import axios from "axios";
+
+type TUser = {
+  deviceId: number;
+  endTime: string;
+  name: string;
+  orders: TOrder[];
+  price: number;
+  startTime: string;
+};
 
 const actAddClientToHistory = createAsyncThunk(
   "history/actAddClientToHistory",
