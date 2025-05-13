@@ -4,6 +4,7 @@ import users from "./users/usersSlice";
 import products from "./products/productsSlice";
 import revenues from "./revenues/revenuesSlice";
 import auth from "./auth/authSlice";
+import history from "./history/historySlice"
 import {
   persistStore,
   persistReducer,
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   users,
   products,
   revenues,
+  history,
   auth: persistReducer(authPersistConfig, auth),
 });
 

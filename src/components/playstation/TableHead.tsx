@@ -1,4 +1,4 @@
-const TableHead = () => {
+const TableHead = ({ isHistory }: { isHistory: boolean }) => {
   return (
     <thead className="bg-white">
       <tr className="*:p-5 *:rounded *:text-center">
@@ -8,8 +8,12 @@ const TableHead = () => {
         <td>وقت النهاية</td>
         <td>المشروبات & المأكولات</td>
         <td>السعر</td>
-        <td>إيقاف</td>
-        <td>إجراء</td>
+        {!isHistory && (
+          <>
+            <td>إيقاف</td>
+            <td>إجراء</td>
+          </>
+        )}
       </tr>
     </thead>
   );

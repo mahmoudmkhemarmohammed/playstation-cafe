@@ -23,6 +23,7 @@ const ExtraTimeForm = ({
 }) => {
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionType, setSessionType] = useState<"زوجي" | "متعدد">("زوجي");
 
   const {
     register,
@@ -39,7 +40,7 @@ const ExtraTimeForm = ({
       actAddExtraTime({
         deviceId,
         extraTime: data.time,
-        price: data.price,
+        price: sessionType === "زوجي" ? data.time * 0.5 : data.time * 0.75,
       })
     )
       .unwrap()
@@ -84,21 +85,28 @@ const ExtraTimeForm = ({
             )}
           </div>
 
-          <div>
-            <label htmlFor="price" className="text-[18px]">
-              السعر (جنيه)
-            </label>
-            <input
-              id="price"
-              type="number"
-              {...register("price", { valueAsNumber: true })}
-              className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
-            />
-            {errors.price && (
-              <span className="text-red-600 text-sm mt-1">
-                {errors.price.message}
-              </span>
-            )}
+          <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <input
+                className="w-5 h-5"
+                type="radio"
+                id="ood"
+                name="type"
+                onChange={() => setSessionType("زوجي")}
+              />
+              <label htmlFor="ood">زوجي</label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                className="w-5 h-5"
+                type="radio"
+                id="multi"
+                name="type"
+                onChange={() => setSessionType("متعدد")}
+              />
+              <label htmlFor="multi">متعدد</label>
+            </div>
           </div>
 
           <input

@@ -8,6 +8,7 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import actAddClientToHistory from "@store/history/act/actAddClientToHistory";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -22,6 +23,7 @@ type TTableBodyContentProps = {
   price: number;
   dataUpdated: boolean;
   setDataUpdated: (val: boolean) => void;
+  isHistory: boolean;
 };
 
 const TableBodyContent = ({
@@ -34,6 +36,7 @@ const TableBodyContent = ({
   price,
   setDataUpdated,
   dataUpdated,
+  isHistory,
 }: TTableBodyContentProps) => {
   const [isDeleteSession, setIsDeleteSession] = useState(false);
   const [isPauseTime, setIsPauseTime] = useState(false);
@@ -70,6 +73,10 @@ const TableBodyContent = ({
     ? dayjs(endTime).tz("Africa/Cairo").format("hh:mm A") // 12-hour format with AM/PM
     : "غير محدد";
 
+    const onSubmit = () => {
+      dispatch(actAddClientToHistory({deviceId , endTime , startTime , price , name , orders , id , hourPrice , isOpenTime}))
+    }
+
   return (
     <tr className="bg-white *:rounded *:text-center *:py-4">
       <td>جهاز رقم {deviceId}</td>
@@ -82,29 +89,35 @@ const TableBodyContent = ({
         ))}
       </td>
       <td className="bg-green-400">{price}</td>
-      <td className="bg-yellow-400 cursor-pointer">
-        <span onClick={handlePauseTime}>إيقاف</span>
-        {isPauseTime && (
-          <AddRevenue
-            isPauseTime={isPauseTime}
-            deviceId={deviceId}
-            id={id}
-            setIsPauseTime={setIsPauseTime}
-            setDataUpdated={setDataUpdated}
-            dataUpdated={dataUpdated}
-          />
-        )}
-      </td>
-      <td className="bg-red-400 cursor-pointer" onClick={handleClose}>
-        حذف
-        {isDeleteSession && (
-          <ConfirmModal
-            message="هل أنت متأكد من حذف الجلسة؟"
-            onClose={handleClose}
-            onConfirm={handleClick}
-          />
-        )}
-      </td>
+      {!isHistory && (
+        <>
+          <td className="bg-yellow-400 cursor-pointer">
+            <span onClick={handlePauseTime}>إيقاف</span>
+            {isPauseTime && (
+              <AddRevenue
+              onSubmit={onSubmit}
+                timeStart={startTime}
+                isPauseTime={isPauseTime}
+                deviceId={deviceId}
+                id={id}
+                setIsPauseTime={setIsPauseTime}
+                setDataUpdated={setDataUpdated}
+                dataUpdated={dataUpdated}
+              />
+            )}
+          </td>
+          <td className="bg-red-400 cursor-pointer" onClick={handleClose}>
+            حذف
+            {isDeleteSession && (
+              <ConfirmModal
+                message="هل أنت متأكد من حذف الجلسة؟"
+                onClose={handleClose}
+                onConfirm={handleClick}
+              />
+            )}
+          </td>
+        </>
+      )}
     </tr>
   );
 };

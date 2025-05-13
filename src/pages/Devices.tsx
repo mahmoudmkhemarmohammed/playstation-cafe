@@ -7,7 +7,6 @@ import actGetDevices from "@store/devices/act/actGetDevices";
 import actGetUsers from "@store/users/act/actGetUsers";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import actEditeStatus from "@store/devices/act/actEditeStatus";
-import Notification from "@components/feedback/Notification";
 import ExtraTimeForm from "@components/forms/ExtraTimeForm";
 import AddOrderForm from "@components/forms/AddOrderForm";
 import actRemoveClient from "@store/users/act/actRemoveClient";
@@ -15,6 +14,10 @@ import actAddRevenues from "@store/revenues/act/actAddRevenues";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import Notification from "@components/feedback/Notification";
+import actAddClientToHistory from "@store/history/act/actAddClientToHistory";
+
+// Dayjs plugins setup
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -29,8 +32,8 @@ const Devices = () => {
   const [showAddOrderForm, setShowAddOrderForm] = useState(false);
   const [notifQueue, setNotifQueue] = useState<any[]>([]);
   const [showNotif, setShowNotif] = useState(false);
-  const dispatch = useAppDispatch();
 
+  const dispatch = useAppDispatch();
   const { data: devices, loading } = useAppSelector((state) => state.devices);
   const { data: users } = useAppSelector((state) => state.users);
 
@@ -45,42 +48,22 @@ const Devices = () => {
 
       const expiredUsers = users.filter((user) => {
         if (user.isOpenTime || !user.endTime) return false;
-
         const endTime = dayjs(user.endTime).tz("Africa/Cairo");
         return now.isAfter(endTime);
       });
 
       if (expiredUsers.length > 0) {
-        expiredUsers.forEach(async (user) => {
-          try {
-            await dispatch(
-              actAddRevenues({
-                date: now.format("YYYY-MM-DD"),
-                total: user.price,
-              })
-            ).unwrap();
-
-            await dispatch(
-              actEditeStatus({ deviceId: user.deviceId, status: "متاح" })
-            ).unwrap();
-
-            await dispatch(actRemoveClient(user.id)).unwrap();
-
-            setNotifQueue((prev) => [
-              ...prev,
-              { name: user.name, deviceId: user.deviceId },
-            ]);
-
-            setDataUpdated((prev) => !prev);
-          } catch (error) {
-            console.error("Error handling finished session:", error);
-          }
+        expiredUsers.forEach((user) => {
+          setNotifQueue((prev) => [
+            ...prev,
+            { name: user.name, deviceId: user.deviceId },
+          ]);
         });
       }
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [users, dispatch]);
+  }, [users]);
 
   useEffect(() => {
     if (!showNotif && notifQueue.length > 0) {
@@ -91,10 +74,6 @@ const Devices = () => {
       setNotifQueue((prev) => prev.slice(1));
     }
   }, [notifQueue, showNotif]);
-
-  const closeNotif = () => {
-    setShowNotif(false);
-  };
 
   const handleNewSession = () => {
     setShowModal(true);
@@ -108,6 +87,42 @@ const Devices = () => {
     setShowAddOrderForm(true);
   };
 
+  const closeNotif = () => {
+    setShowNotif(false);
+  };
+
+  const handleAddExtraTime = (deviceId: number | null) => {
+    if (!deviceId) return;
+    setDeviceId(deviceId);
+    setAddExtraTime(true);
+    setShowNotif(false);
+  };
+
+  const handleEndSession = async (deviceId: number | null) => {
+    if (!deviceId) return;
+    try {
+      const user = users.find((u) => u.deviceId === deviceId);
+      if (!user) return;
+
+      await dispatch(actAddClientToHistory(user)).unwrap();
+
+      await dispatch(
+        actAddRevenues({
+          date: dayjs().tz("Africa/Cairo").format("YYYY-MM-DD"),
+          total: user.price,
+        })
+      ).unwrap();
+
+      await dispatch(actEditeStatus({ deviceId, status: "متاح" })).unwrap();
+      await dispatch(actRemoveClient(user.id)).unwrap();
+
+      setDataUpdated((prev) => !prev);
+      setShowNotif(false);
+    } catch (error) {
+      console.error("Error ending session:", error);
+    }
+  };
+
   return (
     <div className="container">
       {showNotif && (
@@ -115,6 +130,8 @@ const Devices = () => {
           deviceId={deviceIdMessage}
           user={nameMessage}
           closeNotif={closeNotif}
+          onAddExtraTime={() => handleAddExtraTime(deviceIdMessage)}
+          onEndSession={() => handleEndSession(deviceIdMessage)}
         />
       )}
 
@@ -167,7 +184,7 @@ const Devices = () => {
       <div className="users">
         <div className="w-full overflow-x-auto mt-2">
           <table className="min-w-max w-full border-separate border-spacing-2">
-            <TableHead />
+            <TableHead isHistory={false} />
             <tbody>
               {users.map((user) => (
                 <TableBodyContent
@@ -175,6 +192,7 @@ const Devices = () => {
                   {...user}
                   dataUpdated={dataUpdated}
                   setDataUpdated={setDataUpdated}
+                  isHistory={false}
                 />
               ))}
             </tbody>

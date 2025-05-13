@@ -12,7 +12,6 @@ export type TUser = {
   orders: TOrder[];
   price: number;
   deviceId: number;
-  hourPrice: number;
   isOpenTime: boolean;
 };
 

@@ -1,13 +1,22 @@
 // components/ui/Notification.tsx
 import { AnimatePresence, motion } from "motion/react";
 import sound from "@assets/sounds/timeout-90320.mp3";
+
 interface Props {
   user: string | null;
   deviceId: number | null;
   closeNotif: () => void;
+  onAddExtraTime: () => void;
+  onEndSession: () => void;
 }
 
-const Notification = ({ user, deviceId, closeNotif }: Props) => {
+const Notification = ({
+  user,
+  deviceId,
+  closeNotif,
+  onAddExtraTime,
+  onEndSession,
+}: Props) => {
   return (
     <AnimatePresence>
       <motion.div
@@ -15,17 +24,34 @@ const Notification = ({ user, deviceId, closeNotif }: Props) => {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -100, opacity: 0 }}
         transition={{ duration: 0.5 }}
-        className="fixed top-5 right-5 bg-red-500 text-white px-8 py-4 rounded-lg shadow-lg z-50 flex flex-col items-center gap-3"
+        className="fixed top-28 right-5 bg-white px-8 py-4 rounded-lg shadow-lg z-50 flex flex-col items-center gap-3"
       >
         <span className="text-3xl">⏰</span>
-        <span className="text-xl">إنتهي وقت الجهاز رقم : {deviceId}</span>
+        <span className="text-xl">انتهى وقت الجهاز رقم : {deviceId}</span>
         <span className="text-xl">المستخدم : {user}</span>
+
+        <div className="flex gap-3 mt-2">
+          <button
+            onClick={onAddExtraTime}
+            className="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded-md cursor-pointer"
+          >
+            إضافة وقت
+          </button>
+          <button
+            onClick={onEndSession}
+            className="bg-red-700 hover:bg-red-800 text-white py-1 px-3 rounded-md cursor-pointer"
+          >
+            إنهاء الجلسة
+          </button>
+        </div>
+
         <span
-          className="w-full text-center text-red-400 rounded-md p-2 bg-white cursor-pointer"
+          className="w-full text-center rounded-md p-2 bg-red-400 cursor-pointer mt-2"
           onClick={closeNotif}
         >
           إغلاق
         </span>
+
         <audio src={sound} autoPlay loop></audio>
       </motion.div>
     </AnimatePresence>

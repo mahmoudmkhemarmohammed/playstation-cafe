@@ -20,8 +20,6 @@ const ModalForm = ({
     onSubmit,
     register,
     errors,
-    sessionPrice,
-    setSessionPrice,
     products,
     handleProductClick,
     handleQuantityChange,
@@ -31,12 +29,13 @@ const ModalForm = ({
     isLoading,
     isOpenTime,
     setIsOpenTime,
+    setSessionType
   } = useModalForm(
     deviceId,
     setShowModal,
     showModal,
     setDataUpdated,
-    dataUpdated
+    dataUpdated,
   );
 
   return (
@@ -71,6 +70,7 @@ const ModalForm = ({
             <input
               type="checkbox"
               id="openTime"
+              className="w-5 h-5"
               onChange={() => setIsOpenTime(!isOpenTime)}
             />
             <label htmlFor="openTime" className="text-[18px]">
@@ -78,39 +78,38 @@ const ModalForm = ({
             </label>
           </div>
 
-          {!isOpenTime && (
-            <>
-              <div>
-                <label htmlFor="time" className="text-[18px]">
-                  الوقت (بالدقائق)
-                </label>
-                <input
-                  defaultValue={1}
-                  id="time"
-                  type="number"
-                  {...register("time", { valueAsNumber: true })}
-                  className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
-                />
-                {errors.time && (
-                  <span className="text-red-600 text-sm mt-1">
-                    {errors.time.message}
-                  </span>
-                )}
-              </div>
+          <div className="flex flex-row! gap-2">
 
-              <div>
-                <label htmlFor="sessionPrice" className="text-[18px]">
-                  سعر الجلسة
-                </label>
-                <input
-                  id="sessionPrice"
-                  type="number"
-                  value={sessionPrice === 0 ? "" : sessionPrice}
-                  onChange={(e) => setSessionPrice(Number(e.target.value))}
-                  className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
-                />
-              </div>
-            </>
+            <div className="flex items-center gap-2">
+              <input className="w-5 h-5" type="radio" id="ood" name="type" defaultChecked onChange={() => setSessionType("زوجي")}/>
+              <label htmlFor="ood">زوجي</label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input className="w-5 h-5" type="radio" id="multi" name="type" onChange={() => setSessionType("متعدد")}/>
+              <label htmlFor="multi">متعدد</label>
+            </div>
+
+          </div>
+
+          {!isOpenTime && (
+            <div>
+              <label htmlFor="time" className="text-[18px]">
+                الوقت (بالدقائق)
+              </label>
+              <input
+                defaultValue={1}
+                id="time"
+                type="number"
+                {...register("time", { valueAsNumber: true })}
+                className="bg-gradient-to-r from-[#9face6] to-[#74ebd5] p-3 mt-2 rounded"
+              />
+              {errors.time && (
+                <span className="text-red-600 text-sm mt-1">
+                  {errors.time.message}
+                </span>
+              )}
+            </div>
           )}
 
           <div>

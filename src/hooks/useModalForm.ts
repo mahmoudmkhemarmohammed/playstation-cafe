@@ -20,16 +20,15 @@ const useModalForm = (
   setDataUpdated: (val: boolean) => void,
   dataUpdated: boolean
 ) => {
-  const currentTime = new Date();
-  const [orders, setOrders] = useState<TOrder[]>([]);
-  const [sessionPrice, setSessionPrice] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isOpenTime, setIsOpenTime] = useState(false);
-
   const dispatch = useAppDispatch();
   const { products } = useAppSelector((state) => state.products);
 
-  console.log(orders);
+  const [orders, setOrders] = useState<TOrder[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isOpenTime, setIsOpenTime] = useState<boolean>(false);
+  const [sessionType, setSessionType] = useState<"زوجي" | "متعدد">("زوجي");
+
+  const currentTime = new Date();
 
   const {
     register,
@@ -41,41 +40,48 @@ const useModalForm = (
     mode: "onBlur",
   });
 
-  const calculateOrdersRevenue = (): number => {
-    return orders.reduce((total, order) => {
+  // --------- حساب سعر الجلسة بناءً على الوقت ونوع الجلسة ---------
+  const calculateSessionPrice = (): number => {
+    const time = watch("time") || 0;
+    const pricePerMinute = sessionType === "زوجي" ? 0.5 : 0.75;
+    return time * pricePerMinute;
+  };
+
+  // --------- Calculations ---------
+  const calculateOrdersRevenue = (): number =>
+    orders.reduce((total, order) => {
       const product = products.find((p: TProduct) => p.id === order.id);
       return product ? total + product.price * order.quantity : total;
     }, 0);
-  };
 
-  const calculateSessionRevenue = (): number => {
-    return sessionPrice;
-  };
+  const calculateSessionRevenue = (): number =>
+    isOpenTime ? 0 : calculateSessionPrice();
 
-  const calculateTotal = (): number => {
-    return calculateOrdersRevenue() + calculateSessionRevenue();
-  };
+  const calculateTotal = (): number =>
+    calculateOrdersRevenue() + calculateSessionRevenue();
 
   const showTotal = (): boolean => {
     const time = watch("time") || 0;
     const hasValidOrders = orders.some((order) => order.quantity > 0);
-    return (sessionPrice > 0 && time > 0 && !isOpenTime) || hasValidOrders;
+    return (time > 0 && !isOpenTime) || hasValidOrders;
   };
 
+  // --------- Handlers ---------
   const handleProductClick = (product: TProduct) => {
     if (!orders.find((order) => order.id === product.id)) {
-      setOrders([
-        ...orders,
+      setOrders((prevOrders) => [
+        ...prevOrders,
         { id: product.id, name: product.name, quantity: 1 },
       ]);
     }
   };
 
   const handleQuantityChange = (id: number, value: number) => {
-    const updatedOrders = orders.map((order) =>
-      order.id === id ? { ...order, quantity: value } : order
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === id ? { ...order, quantity: value } : order
+      )
     );
-    setOrders(updatedOrders);
   };
 
   const onSubmit = (data: TaddSessionSchema) => {
@@ -87,7 +93,7 @@ const useModalForm = (
         : null;
 
     const filteredOrders = orders.filter((order) => order.quantity > 0);
-    const sessionRevenue = isOpenTime ? 0 : calculateSessionRevenue();
+    const sessionRevenue = isOpenTime ? 0 : calculateSessionPrice();
     const ordersRevenue = calculateOrdersRevenue();
     const totalPrice = sessionRevenue + ordersRevenue;
 
@@ -98,7 +104,7 @@ const useModalForm = (
       orders: filteredOrders,
       price: isOpenTime ? "----" : totalPrice,
       deviceId,
-      sessionPrice: isOpenTime ? 0 : sessionPrice,
+      sessionPrice: sessionRevenue,
       isOpenTime,
     };
 
@@ -119,6 +125,7 @@ const useModalForm = (
       });
   };
 
+  // --------- Effects ---------
   useEffect(() => {
     dispatch(actGetProducts());
   }, [dispatch]);
@@ -128,8 +135,6 @@ const useModalForm = (
     onSubmit,
     register,
     errors,
-    sessionPrice,
-    setSessionPrice,
     products,
     handleProductClick,
     handleQuantityChange,
@@ -139,6 +144,7 @@ const useModalForm = (
     isLoading,
     isOpenTime,
     setIsOpenTime,
+    setSessionType
   };
 };
 

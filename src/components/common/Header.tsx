@@ -44,7 +44,7 @@ const Header = () => {
           </li>
           {user?.role === "admin" && (
             <li>
-              <NavLink to={"/revenues"}>الإيرادات</NavLink>
+              <NavLink to={"/history"}>الجلسات</NavLink>
             </li>
           )}
         </ul>

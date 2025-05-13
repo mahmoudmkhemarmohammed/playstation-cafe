@@ -2,18 +2,23 @@ import { lazy } from "react";
 import ProtectedRoute from "@components/Auth/ProtectedRoute";
 import MainLayout from "@layouts/MainLayout";
 const Devices = lazy(() => import("@pages/Devices"));
-import Home from "@pages/Home";
+const Home = lazy(() => import("@pages/Home"));
 import Login from "@pages/Login";
 const Products = lazy(() => import("@pages/Products"));
-const Revenues = lazy(() => import("@pages/Revenues"));
+const History = lazy(() => import("@pages/History"));
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LoadingSuspance from "@components/feedback/LoadingSuspance";
 import IsAdmin from "@components/Auth/IsAdmin";
-
+import UseResetScroll from "@hooks/useResetScroll";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <>
+        <UseResetScroll />
+        <MainLayout />
+      </>
+    ),
     errorElement: <div>Error</div>,
     children: [
       {
@@ -21,7 +26,7 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: "/devices",
+        path: "devices",
         element: (
           <ProtectedRoute>
             <Devices />
@@ -49,12 +54,12 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "revenues",
+        path: "history",
         element: (
           <ProtectedRoute>
             <IsAdmin>
               <LoadingSuspance>
-                <Revenues />
+                <History />
               </LoadingSuspance>
             </IsAdmin>
           </ProtectedRoute>
