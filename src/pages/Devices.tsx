@@ -33,6 +33,7 @@ const Devices = () => {
   const [notifiedUsers, setNotifiedUsers] = useState<number[]>([]);
   const [processingSessions, setProcessingSessions] = useState<number[]>([]);
   const [processedUserIds, setProcessedUserIds] = useState<number[]>([]);
+  const [isEndSession,setIsEndSession] = useState(false)
 
   const dispatch = useAppDispatch();
   const { data: devices, loading } = useAppSelector((state) => state.devices);
@@ -105,6 +106,7 @@ const Devices = () => {
 
   const handleEndSession = useCallback(
     async (deviceId: number | null) => {
+      setIsEndSession(true)
       if (!deviceId) return;
       if (processingSessions.includes(deviceId)) return;
 
@@ -129,12 +131,14 @@ const Devices = () => {
 
         setDataUpdated((prev) => !prev);
         setShowNotif(false);
+        setIsEndSession(false)
       } catch (error) {
         console.error("Error ending session:", error);
       } finally {
         setProcessingSessions((prev) =>
           prev.filter((id) => id !== deviceId)
         );
+        setIsEndSession(false)
       }
     },
     [dispatch, users, processingSessions, processedUserIds]
@@ -149,6 +153,7 @@ const Devices = () => {
           closeNotif={closeNotif}
           onAddExtraTime={() => handleAddExtraTime(deviceIdMessage)}
           onEndSession={() => handleEndSession(deviceIdMessage)}
+          isEndSession={isEndSession}
         />
       )}
 

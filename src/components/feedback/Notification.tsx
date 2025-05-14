@@ -8,6 +8,7 @@ interface Props {
   closeNotif: () => void;
   onAddExtraTime: () => void;
   onEndSession: () => void;
+  isEndSession: boolean;
 }
 
 const Notification = ({
@@ -16,6 +17,7 @@ const Notification = ({
   closeNotif,
   onAddExtraTime,
   onEndSession,
+  isEndSession,
 }: Props) => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -57,7 +59,7 @@ const Notification = ({
             onClick={onEndSession}
             className="bg-red-700 hover:bg-red-800 text-white py-1 px-3 rounded-md cursor-pointer"
           >
-            إنهاء الجلسة
+            {isEndSession ? "إنتظر جاري ألإنهاء" : "إنهاء الجلسة"}
           </button>
         </div>
 
