@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ModalForm from "@components/forms/ModalForm";
 import PSCard from "@components/playstation/PSCard";
 import TableBodyContent from "@components/playstation/TableBodyContent";
@@ -30,7 +30,9 @@ const Devices = () => {
   const [showAddOrderForm, setShowAddOrderForm] = useState(false);
   const [notifQueue, setNotifQueue] = useState<any[]>([]);
   const [showNotif, setShowNotif] = useState(false);
-  const [notifiedUsers, setNotifiedUsers] = useState<number[]>([]); // ✅ Anti-Repeat
+  const [notifiedUsers, setNotifiedUsers] = useState<number[]>([]);
+  const [processingSessions, setProcessingSessions] = useState<number[]>([]);
+  const [processedUserIds, setProcessedUserIds] = useState<number[]>([]);
 
   const dispatch = useAppDispatch();
   const { data: devices, loading } = useAppSelector((state) => state.devices);
@@ -101,29 +103,42 @@ const Devices = () => {
     setShowNotif(false);
   };
 
-  const handleEndSession = async (deviceId: number | null) => {
-    if (!deviceId) return;
-    try {
+  const handleEndSession = useCallback(
+    async (deviceId: number | null) => {
+      if (!deviceId) return;
+      if (processingSessions.includes(deviceId)) return;
+
       const user = users.find((u) => u.deviceId === deviceId);
-      if (!user) return;
+      if (!user || processedUserIds.includes(user.id)) return;
 
-      await dispatch(actAddClientToHistory(user)).unwrap();
-      await dispatch(
-        actAddRevenues({
-          date: dayjs().tz("Africa/Cairo").format("YYYY-MM-DD"),
-          total: user.price,
-        })
-      ).unwrap();
+      setProcessingSessions((prev) => [...prev, deviceId]);
+      setProcessedUserIds((prev) => [...prev, user.id]);
 
-      await dispatch(actEditeStatus({ deviceId, status: "متاح" })).unwrap();
-      await dispatch(actRemoveClient(user.id)).unwrap();
+      try {
+        
+        await dispatch(
+          actAddRevenues({
+            date: dayjs().tz("Africa/Cairo").format("YYYY-MM-DD"),
+            total: user.price,
+          })
+        ).unwrap();
+        
+        await dispatch(actAddClientToHistory(user)).unwrap();
+        await dispatch(actEditeStatus({ deviceId, status: "متاح" })).unwrap();
+        await dispatch(actRemoveClient(user.id)).unwrap();
 
-      setDataUpdated((prev) => !prev);
-      setShowNotif(false);
-    } catch (error) {
-      console.error("Error ending session:", error);
-    }
-  };
+        setDataUpdated((prev) => !prev);
+        setShowNotif(false);
+      } catch (error) {
+        console.error("Error ending session:", error);
+      } finally {
+        setProcessingSessions((prev) =>
+          prev.filter((id) => id !== deviceId)
+        );
+      }
+    },
+    [dispatch, users, processingSessions, processedUserIds]
+  );
 
   return (
     <div className="container">

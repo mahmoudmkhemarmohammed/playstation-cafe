@@ -1,8 +1,10 @@
 import Loading from "@components/feedback/Loading";
 import actEditeStatus from "@store/devices/act/actEditeStatus";
+import actAddClientToHistory from "@store/history/act/actAddClientToHistory";
 import { useAppDispatch } from "@store/hooks";
 import actAddRevenues from "@store/revenues/act/actAddRevenues";
 import actRemoveClient from "@store/users/act/actRemoveClient";
+import { TOrder } from "@types";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -13,8 +15,11 @@ const AddRevenue = ({
   isPauseTime,
   setDataUpdated,
   dataUpdated,
-  timeStart,
-  onSubmit,
+  startTime,
+  ordersRevenue,
+  price,
+  name,
+  orders,
 }: {
   id: number;
   deviceId: number;
@@ -22,47 +27,28 @@ const AddRevenue = ({
   dataUpdated: boolean;
   setIsPauseTime: (val: boolean) => void;
   setDataUpdated: (val: boolean) => void;
-  timeStart: string;
-  onSubmit: () => void;
+  startTime: string;
+  ordersRevenue: number;
+  price: number | string;
+  name: string;
+  orders: TOrder[];
 }) => {
   const dateNow = new Date();
-  const [price, setPrice] = useState<null | number>(null);
+  const [pricePerMin, setPricePerMin] = useState<number>(0.5);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
 
-  const formattedStartTime = dayjs(timeStart)
+  const formattedStartTime = dayjs(startTime)
     .tz("Africa/Cairo")
     .format("hh:mm A"); // 12-hour format with AM/PM
   const formattedEndTime = dayjs(dateNow).tz("Africa/Cairo").format("hh:mm A"); // 12-hour format with AM/PM
 
-  const start = dayjs(timeStart).tz("Africa/Cairo");
+  const start = dayjs(startTime).tz("Africa/Cairo");
   const end = dayjs(dateNow).tz("Africa/Cairo");
 
   const diffInMinutes = end.diff(start, "minute");
 
   const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(false);
-  const sendData = async () => {
-    try {
-      setIsLoading(!isLoading);
-      onSubmit();
-      await dispatch(
-        actAddRevenues({
-          date: new Date().toLocaleDateString("en-CA"),
-          total: price !== null ? price : 0,
-        })
-      ).unwrap();
-
-      await dispatch(
-        actEditeStatus({ deviceId: deviceId, status: "متاح" })
-      ).unwrap();
-
-      await dispatch(actRemoveClient(id)).unwrap();
-
-      setDataUpdated(!dataUpdated);
-      setIsLoading(!isLoading);
-    } catch (error) {
-      console.error("Error handling finished session:", error);
-    }
-  };
 
   const handleRemoveSession = async () => {
     await dispatch(actRemoveClient(id)).unwrap();
@@ -72,6 +58,68 @@ const AddRevenue = ({
     setIsPauseTime(!isPauseTime);
     setDataUpdated(!dataUpdated);
   };
+
+  const onSubmit = async () => {
+    setIsLoading(true);
+    const now = dayjs().tz("Africa/Cairo");
+    const start = dayjs(startTime).tz("Africa/Cairo");
+
+    // حساب عدد الدقائق الفعلية المستغرقة
+    const durationMinutes = now.diff(start, "minute");
+
+    // لو السعر "----" (جلسة مفتوحة)
+    const isOpenSession = price === "----";
+
+    // سعر الدقيقة لجلسة مفتوحة (حدد قيمته انت زي ما تحب)
+    const openSessionPricePerMinute = pricePerMin; // مثال: 2 جنيه للدقيقة
+
+    let actualPrice = 0;
+
+    if (isOpenSession) {
+      // جلسة مفتوحة = احسب بسعر الدقيقة المفتوحة
+      actualPrice = Math.ceil(openSessionPricePerMinute * durationMinutes);
+    } else {
+      // جلسة عادية = احسب عادي من السعر الكلي والمدة
+      const originalEnd = dayjs(end).tz("Africa/Cairo");
+      const originalDuration = originalEnd.diff(start, "minute") || 1; // احتياط
+      const pricePerMinute = +price / originalDuration; // تأكد السعر رقم
+      actualPrice = Math.ceil(pricePerMinute * durationMinutes);
+    }
+
+    // 1- إضافة للأرباح
+    await dispatch(
+      actAddRevenues({
+        date: now.format("YYYY-MM-DD"),
+        total: actualPrice + ordersRevenue,
+      })
+    ).unwrap();
+
+    // 2- إضافة للـ History
+    await dispatch(
+      actAddClientToHistory({
+        deviceId,
+        endTime: now.format(), // نهاية الجلسة اللحظية
+        startTime,
+        price: actualPrice + ordersRevenue,
+        name,
+        orders,
+      })
+    ).unwrap();
+
+    // 3- تغيير حالة الجهاز لمتاح
+    await dispatch(actEditeStatus({ deviceId, status: "متاح" })).unwrap();
+
+    // 4- إزالة العميل من قائمة المستخدمين
+    await dispatch(actRemoveClient(id)).unwrap();
+
+    // 5- تحديث الـ State عشان الريفريش
+    setDataUpdated(!dataUpdated);
+
+    // 6- إغلاق الفورم
+    setIsPauseTime(false);
+    setIsLoading(false);
+  };
+
   return (
     <div className="fixed z-[1000] w-full h-full bg-gradient-to-r from-[#9face6] to-[#74ebd5] left-0 top-0 flex justify-center items-center">
       {isLoading ? (
@@ -99,7 +147,10 @@ const AddRevenue = ({
                 type="radio"
                 id="ood"
                 name="type"
-                onChange={() => setPrice(diffInMinutes * 0.5)}
+                onChange={() => {
+                  setPricePerMin(diffInMinutes * 0.5);
+                  setIsChecked(true);
+                }}
               />
               <label htmlFor="ood">زوجي</label>
             </div>
@@ -110,16 +161,19 @@ const AddRevenue = ({
                 type="radio"
                 id="multi"
                 name="type"
-                onChange={() => setPrice(diffInMinutes * 0.75)}
+                onChange={() => {
+                  setPricePerMin(diffInMinutes * 0.75);
+                  setIsChecked(true);
+                }}
               />
               <label htmlFor="multi">متعدد</label>
             </div>
           </div>
 
-          {price && <h2 className="text-xl mt-3">{price} جنية</h2>}
+          {isChecked && <h2 className="text-xl mt-3">{pricePerMin} جنية</h2>}
           <button
             className="text-[18px] bg-green-400 p-2 rounded-md cursor-pointer"
-            onClick={sendData}
+            onClick={onSubmit}
           >
             حفظ
           </button>

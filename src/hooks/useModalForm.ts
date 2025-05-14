@@ -105,6 +105,7 @@ const useModalForm = (
       price: isOpenTime ? "----" : totalPrice,
       deviceId,
       sessionPrice: sessionRevenue,
+      ordersRevenue: orders.length > 0 ? ordersRevenue : 0,
       isOpenTime,
     };
 

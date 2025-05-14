@@ -51,7 +51,8 @@ const actAddOrderToClient = createAsyncThunk(
       // Send Updata
       const updateRes = await axios.patch(`/clients/${client[0].id}`, {
         orders: updatedOrders,
-        price: client[0].price + totalPrice
+        price: client[0].price + totalPrice,
+        ordersRevenue: client[0].ordersRevenue + totalPrice
       });
 
       return updateRes.data;

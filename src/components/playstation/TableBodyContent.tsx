@@ -8,7 +8,6 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import actAddClientToHistory from "@store/history/act/actAddClientToHistory";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -20,6 +19,7 @@ type TTableBodyContentProps = {
   startTime: string;
   endTime: string;
   orders: TOrder[];
+  ordersRevenue: number;
   price: number;
   dataUpdated: boolean;
   setDataUpdated: (val: boolean) => void;
@@ -32,9 +32,10 @@ const TableBodyContent = ({
   name,
   startTime,
   endTime,
-  orders,
   price,
   setDataUpdated,
+  ordersRevenue,
+  orders,
   dataUpdated,
   isHistory,
 }: TTableBodyContentProps) => {
@@ -73,9 +74,7 @@ const TableBodyContent = ({
     ? dayjs(endTime).tz("Africa/Cairo").format("hh:mm A") // 12-hour format with AM/PM
     : "غير محدد";
 
-    const onSubmit = async () => {
-      await dispatch(actAddClientToHistory({deviceId , endTime , startTime , price , name , orders}))
-    }
+
 
   return (
     <tr className="bg-white *:rounded *:text-center *:py-4">
@@ -95,14 +94,17 @@ const TableBodyContent = ({
             <span onClick={handlePauseTime}>إيقاف</span>
             {isPauseTime && (
               <AddRevenue
-              onSubmit={onSubmit}
-                timeStart={startTime}
+                startTime={startTime}
                 isPauseTime={isPauseTime}
                 deviceId={deviceId}
                 id={id}
                 setIsPauseTime={setIsPauseTime}
                 setDataUpdated={setDataUpdated}
                 dataUpdated={dataUpdated}
+                ordersRevenue={ordersRevenue}
+                price={price}
+                name={name}
+                orders={orders}
               />
             )}
           </td>

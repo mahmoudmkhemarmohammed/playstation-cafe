@@ -13,6 +13,7 @@ export type TUser = {
   price: number;
   deviceId: number;
   isOpenTime: boolean;
+  ordersRevenue: number
 };
 
 export type TOwner = {

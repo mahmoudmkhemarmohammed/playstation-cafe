@@ -11,6 +11,7 @@ type TFormData = {
   price: number | string;
   deviceId: number
   sessionPrice: number
+  ordersRevenue: number
 };
 
 const actAddClient = createAsyncThunk(
