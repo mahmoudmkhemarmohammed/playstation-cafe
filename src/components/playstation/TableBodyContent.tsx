@@ -102,7 +102,6 @@ const TableBodyContent = ({
                 setDataUpdated={setDataUpdated}
                 dataUpdated={dataUpdated}
                 ordersRevenue={ordersRevenue}
-                price={price}
                 name={name}
                 orders={orders}
               />

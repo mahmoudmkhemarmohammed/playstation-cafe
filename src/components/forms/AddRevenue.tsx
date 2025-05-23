@@ -17,7 +17,6 @@ const AddRevenue = ({
   dataUpdated,
   startTime,
   ordersRevenue,
-  price,
   name,
   orders,
 }: {
@@ -29,19 +28,18 @@ const AddRevenue = ({
   setDataUpdated: (val: boolean) => void;
   startTime: string;
   ordersRevenue: number;
-  price: number | string;
   name: string;
   orders: TOrder[];
 }) => {
   const dateNow = new Date();
-  const [pricePerMin, setPricePerMin] = useState<number>(0.5);
+  const [pricePerMin, setPricePerMin] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
   const formattedStartTime = dayjs(startTime)
     .tz("Africa/Cairo")
-    .format("hh:mm A"); // 12-hour format with AM/PM
-  const formattedEndTime = dayjs(dateNow).tz("Africa/Cairo").format("hh:mm A"); // 12-hour format with AM/PM
+    .format("hh:mm A");
+  const formattedEndTime = dayjs(dateNow).tz("Africa/Cairo").format("hh:mm A");
 
   const start = dayjs(startTime).tz("Africa/Cairo");
   const end = dayjs(dateNow).tz("Africa/Cairo");
@@ -60,33 +58,19 @@ const AddRevenue = ({
   };
 
   const onSubmit = async () => {
+    if (!isChecked) {
+      alert("من فضلك اختر نوع اللعب (زوجي / متعدد)");
+      return;
+    }
+
     setIsLoading(true);
     const now = dayjs().tz("Africa/Cairo");
     const start = dayjs(startTime).tz("Africa/Cairo");
 
-    // حساب عدد الدقائق الفعلية المستغرقة
-    const durationMinutes = now.diff(start, "minute");
+    const durationMinutes = now.diff(start, "minute") || 1;
 
-    // لو السعر "----" (جلسة مفتوحة)
-    const isOpenSession = price === "----";
+    const actualPrice = Math.ceil(pricePerMin * durationMinutes);
 
-    // سعر الدقيقة لجلسة مفتوحة (حدد قيمته انت زي ما تحب)
-    const openSessionPricePerMinute = pricePerMin; // مثال: 2 جنيه للدقيقة
-
-    let actualPrice = 0;
-
-    if (isOpenSession) {
-      // جلسة مفتوحة = احسب بسعر الدقيقة المفتوحة
-      actualPrice = Math.ceil(openSessionPricePerMinute * durationMinutes);
-    } else {
-      // جلسة عادية = احسب عادي من السعر الكلي والمدة
-      const originalEnd = dayjs(end).tz("Africa/Cairo");
-      const originalDuration = originalEnd.diff(start, "minute") || 1; // احتياط
-      const pricePerMinute = +price / originalDuration; // تأكد السعر رقم
-      actualPrice = Math.ceil(pricePerMinute * durationMinutes);
-    }
-
-    // 1- إضافة للأرباح
     await dispatch(
       actAddRevenues({
         date: now.format("YYYY-MM-DD"),
@@ -94,11 +78,10 @@ const AddRevenue = ({
       })
     ).unwrap();
 
-    // 2- إضافة للـ History
     await dispatch(
       actAddClientToHistory({
         deviceId,
-        endTime: now.format(), // نهاية الجلسة اللحظية
+        endTime: now.format(),
         startTime,
         price: actualPrice + ordersRevenue,
         name,
@@ -106,16 +89,10 @@ const AddRevenue = ({
       })
     ).unwrap();
 
-    // 3- تغيير حالة الجهاز لمتاح
     await dispatch(actEditeStatus({ deviceId, status: "متاح" })).unwrap();
-
-    // 4- إزالة العميل من قائمة المستخدمين
     await dispatch(actRemoveClient(id)).unwrap();
 
-    // 5- تحديث الـ State عشان الريفريش
     setDataUpdated(!dataUpdated);
-
-    // 6- إغلاق الفورم
     setIsPauseTime(false);
     setIsLoading(false);
   };
@@ -148,7 +125,7 @@ const AddRevenue = ({
                 id="ood"
                 name="type"
                 onChange={() => {
-                  setPricePerMin(diffInMinutes * 0.5);
+                  setPricePerMin(0.5);
                   setIsChecked(true);
                 }}
               />
@@ -162,7 +139,7 @@ const AddRevenue = ({
                 id="multi"
                 name="type"
                 onChange={() => {
-                  setPricePerMin(diffInMinutes * 0.75);
+                  setPricePerMin(0.75);
                   setIsChecked(true);
                 }}
               />
@@ -170,7 +147,12 @@ const AddRevenue = ({
             </div>
           </div>
 
-          {isChecked && <h2 className="text-xl mt-3">{pricePerMin} جنية</h2>}
+          {isChecked && (
+            <h2 className="text-xl mt-3">
+              {Math.ceil(pricePerMin * diffInMinutes)} جنية
+            </h2>
+          )}
+
           <button
             className="text-[18px] bg-green-400 p-2 rounded-md cursor-pointer"
             onClick={onSubmit}

@@ -55,12 +55,18 @@ const Notification = ({
           >
             إضافة وقت
           </button>
-          <button
-            onClick={onEndSession}
-            className="bg-red-700 hover:bg-red-800 text-white py-1 px-3 rounded-md cursor-pointer"
-          >
-            {isEndSession ? "إنتظر جاري ألإنهاء" : "إنهاء الجلسة"}
-          </button>
+          {!isEndSession ? (
+            <button
+              onClick={onEndSession}
+              className="bg-red-700 hover:bg-red-800 text-white py-1 px-3 rounded-md cursor-pointer"
+            >
+              إنهاء الجلسة
+            </button>
+          ) : (
+            <button className="bg-red-700 hover:bg-red-800 text-white py-1 px-3 rounded-md cursor-pointer">
+              إنتظر جاري ألإنهاء
+            </button>
+          )}
         </div>
 
         <span
